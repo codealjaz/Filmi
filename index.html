@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="sl">
+<meta charset="utf-8">
+<title>Iskanje filmov</title>
+
+<input id="naslov" placeholder="Vpiši naslov filma">
+<button onclick="isci()">Išči</button>
+<div id="rezultat"></div>
+
+<script>
+async function isci() {
+  const naslov = document.getElementById("naslov").value.trim();
+  const prikaz = document.getElementById("rezultat");
+
+  if (!naslov) {
+    prikaz.textContent = "Vpiši naslov filma.";
+    return;
+  }
+
+  prikaz.textContent = "Iščem…";
+
+  try {
+    const url = new URL("https://www.omdbapi.com/");
+    url.search = new URLSearchParams({
+      apikey: "8f7a42e2",
+      t: naslov,
+      type: "movie",
+      r: "json"
+    });
+
+    const odgovor = await fetch(url);
+    const film = await odgovor.json();
+
+    if (film.Response === "False") {
+      prikaz.textContent = "Filma nisem našel.";
+      return;
+    }
+
+    prikaz.innerHTML = `
+      <h2>${varno(film.Title)} (${varno(film.Year)})</h2>
+      <p>IMDb ocena: ${varno(film.imdbRating)}</p>
+      <p>Režiser: ${varno(film.Director)}</p>
+      <p>${varno(film.Plot)}</p>
+    `;
+  } catch {
+    prikaz.textContent = "Pri iskanju je prišlo do napake.";
+  }
+}
+
+function varno(vrednost) {
+  const element = document.createElement("span");
+  element.textContent = vrednost || "Ni podatka";
+  return element.innerHTML;
+}
+</script>
+</html>
