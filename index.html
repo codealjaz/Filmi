@@ -6,53 +6,214 @@
   <title>Iskanje filmov in slovenskih podnapisov</title>
 
   <style>
-    body {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 0 16px;
-      font: 16px Arial, sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 4px 0;
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 16px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 30px;
+      text-align: center;
+      font-size: 2.5rem;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .iskalni-vrstica {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     input {
-      width: min(100%, 380px);
+      padding: 14px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      width: min(100%, 450px);
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.35);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
 
     button {
+      padding: 14px 32px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.35);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    #rezultat {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
     }
 
     .film {
-      border-top: 1px solid #ddd;
-      padding: 14px 0;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .film:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-8px);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .film-slika {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .film-slika.ni-slike {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .film-info {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .film-naslov {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .film-leto {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
     }
 
     .gumbi {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-top: auto;
+    }
+
+    .gumbi button {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+
+    .oseba-sporocilo {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      font-size: 1.1rem;
+    }
+
+    .nalaganje {
+      text-align: center;
+      color: white;
+      padding: 40px;
+      font-size: 1.2rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Iskanje filmov</h1>
+  <div class="container">
+    <h1>🎬 Iskanje filmov</h1>
 
-  <input
-    id="iskanje"
-    type="search"
-    placeholder="Vpiši naslov filma"
-  >
+    <div class="iskalni-vrstica">
+      <input
+        id="iskanje"
+        type="search"
+        placeholder="Vpiši naslov filma..."
+      >
+      <button id="isci">Išči</button>
+    </div>
 
-  <button id="isci">Išči</button>
-
-  <div id="rezultat" aria-live="polite"></div>
+    <div id="rezultat" aria-live="polite"></div>
+  </div>
 
   <script>
     const API_KLJUC = "8f7a42e2";
@@ -73,11 +234,11 @@
       const naslov = vnos.value.trim();
 
       if (!naslov) {
-        rezultat.textContent = "Vpiši naslov filma.";
+        prikaziSporocilo("Vpiši naslov filma.");
         return;
       }
 
-      rezultat.textContent = "Iščem filme ...";
+      prikaziNalaganje();
 
       try {
         const url = new URL("https://www.omdbapi.com/");
@@ -93,48 +254,74 @@
         const podatki = await odgovor.json();
 
         if (podatki.Response === "False") {
-          rezultat.textContent = "Filma nisem našel.";
+          prikaziSporocilo("Filma nisem našel.");
           return;
         }
 
         rezultat.replaceChildren();
 
         for (const film of podatki.Search) {
-
-          const kartica = document.createElement("section");
+          const kartica = document.createElement("div");
           kartica.className = "film";
 
-          const naslovFilma = document.createElement("h2");
-          naslovFilma.textContent =
-            `${film.Title} (${film.Year})`;
+          // Slika
+          const slika = document.createElement("img");
+          slika.className = "film-slika";
+          
+          if (film.Poster && film.Poster !== "N/A") {
+            slika.src = film.Poster;
+            slika.alt = film.Title;
+          } else {
+            slika.className = "film-slika ni-slike";
+            slika.innerHTML = "🎥";
+            slika.alt = "Ni dostopne slike";
+          }
 
+          // Informacije
+          const info = document.createElement("div");
+          info.className = "film-info";
+
+          const naslovFilma = document.createElement("h2");
+          naslovFilma.className = "film-naslov";
+          naslovFilma.textContent = film.Title;
+
+          const leto = document.createElement("p");
+          leto.className = "film-leto";
+          leto.textContent = `Leto: ${film.Year}`;
+
+          // Gumbi
           const gumbi = document.createElement("div");
           gumbi.className = "gumbi";
 
-          // En skupni gumb za odpiranje obeh strani hkrati
           const skupniGumb = document.createElement("button");
-          skupniGumb.textContent = "Odpri podnapise in Pirate Bay";
+          skupniGumb.textContent = "Odpri";
 
-          skupniGumb.addEventListener("click", () => {
-            // Hkrati sprožimo odpiranje obeh strani
+          skupniGumb.addEventListener("click", (event) => {
+            event.stopPropagation();
             odpriPodnapise(film.imdbID);
             odpriPirateBay(film.Title, film.Year);
           });
 
           gumbi.append(skupniGumb);
-          kartica.append(naslovFilma, gumbi);
+          info.append(naslovFilma, leto, gumbi);
+          kartica.append(slika, info);
           rezultat.appendChild(kartica);
         }
 
       } catch (napaka) {
-        rezultat.textContent =
-          "Pri iskanju je prišlo do napake. Poskusi znova.";
-
+        prikaziSporocilo("Pri iskanju je prišlo do napake. Poskusi znova.");
         console.error(napaka);
       }
     }
 
-    // Funkcija za odpiranje slovenskih podnapisov
+    function prikaziSporocilo(besedilo) {
+      rezultat.innerHTML = `<div class="oseba-sporocilo">${besedilo}</div>`;
+    }
+
+    function prikaziNalaganje() {
+      rezultat.innerHTML = `<div class="nalaganje"><div class="spinner"></div><p>Iščem filme...</p></div>`;
+    }
+
     function odpriPodnapise(imdbID) {
       const imdbStevilka = imdbID.replace(/^tt/, "");
       const naslov = vnos.value.trim();
@@ -152,9 +339,7 @@
       );
     }
 
-    // Nova funkcija za odpiranje Pirate Bay po vašem vzorcu
     function odpriPirateBay(naslov, leto) {
-      // Sestavimo niz "Naslov (Leto)" npr. "Tenet (2020)"
       const iskalniNiz = `${naslov} (${leto})`;
       
       const povezava =
