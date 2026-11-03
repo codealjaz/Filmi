@@ -1,56 +1,175 @@
 <!doctype html>
 <html lang="sl">
-<meta charset="utf-8">
-<title>Iskanje filmov</title>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iskanje filmov in slovenskih podnapisov</title>
 
-<input id="naslov" placeholder="Vpiši naslov filma">
-<button onclick="isci()">Išči</button>
-<div id="rezultat"></div>
-
-<script>
-async function isci() {
-  const naslov = document.getElementById("naslov").value.trim();
-  const prikaz = document.getElementById("rezultat");
-
-  if (!naslov) {
-    prikaz.textContent = "Vpiši naslov filma.";
-    return;
-  }
-
-  prikaz.textContent = "Iščem…";
-
-  try {
-    const url = new URL("https://www.omdbapi.com/");
-    url.search = new URLSearchParams({
-      apikey: "8f7a42e2",
-      t: naslov,
-      type: "movie",
-      r: "json"
-    });
-
-    const odgovor = await fetch(url);
-    const film = await odgovor.json();
-
-    if (film.Response === "False") {
-      prikaz.textContent = "Filma nisem našel.";
-      return;
+  <style>
+    body {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 16px;
+      font: 16px Arial, sans-serif;
     }
 
-    prikaz.innerHTML = `
-      <h2>${varno(film.Title)} (${varno(film.Year)})</h2>
-      <p>IMDb ocena: ${varno(film.imdbRating)}</p>
-      <p>Režiser: ${varno(film.Director)}</p>
-      <p>${varno(film.Plot)}</p>
-    `;
-  } catch {
-    prikaz.textContent = "Pri iskanju je prišlo do napake.";
-  }
-}
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 4px 0;
+    }
 
-function varno(vrednost) {
-  const element = document.createElement("span");
-  element.textContent = vrednost || "Ni podatka";
-  return element.innerHTML;
-}
-</script>
+    input {
+      width: min(100%, 380px);
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .film {
+      border-top: 1px solid #ddd;
+      padding: 14px 0;
+    }
+
+    .gumbi {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Iskanje filmov</h1>
+
+  <input
+    id="iskanje"
+    type="search"
+    placeholder="Vpiši naslov filma"
+  >
+
+  <button id="isci">Išči</button>
+
+  <div id="rezultat" aria-live="polite"></div>
+
+  <script>
+    const API_KLJUC = "8f7a42e2";
+
+    const vnos = document.getElementById("iskanje");
+    const rezultat = document.getElementById("rezultat");
+
+    document.getElementById("isci")
+      .addEventListener("click", isci);
+
+    vnos.addEventListener("keydown", (dogodek) => {
+      if (dogodek.key === "Enter") {
+        isci();
+      }
+    });
+
+    async function isci() {
+      const naslov = vnos.value.trim();
+
+      if (!naslov) {
+        rezultat.textContent = "Vpiši naslov filma.";
+        return;
+      }
+
+      rezultat.textContent = "Iščem filme ...";
+
+      try {
+        const url = new URL("https://www.omdbapi.com/");
+
+        url.search = new URLSearchParams({
+          apikey: API_KLJUC,
+          s: naslov,
+          type: "movie",
+          r: "json"
+        });
+
+        const odgovor = await fetch(url);
+        const podatki = await odgovor.json();
+
+        if (podatki.Response === "False") {
+          rezultat.textContent = "Filma nisem našel.";
+          return;
+        }
+
+        rezultat.replaceChildren();
+
+        for (const film of podatki.Search) {
+
+          const kartica = document.createElement("section");
+          kartica.className = "film";
+
+          const naslovFilma = document.createElement("h2");
+          naslovFilma.textContent =
+            `${film.Title} (${film.Year})`;
+
+          const gumbi = document.createElement("div");
+          gumbi.className = "gumbi";
+
+          // En skupni gumb za odpiranje obeh strani hkrati
+          const skupniGumb = document.createElement("button");
+          skupniGumb.textContent = "Odpri podnapise in Pirate Bay";
+
+          skupniGumb.addEventListener("click", () => {
+            // Hkrati sprožimo odpiranje obeh strani
+            odpriPodnapise(film.imdbID);
+            odpriPirateBay(film.Title, film.Year);
+          });
+
+          gumbi.append(skupniGumb);
+          kartica.append(naslovFilma, gumbi);
+          rezultat.appendChild(kartica);
+        }
+
+      } catch (napaka) {
+        rezultat.textContent =
+          "Pri iskanju je prišlo do napake. Poskusi znova.";
+
+        console.error(napaka);
+      }
+    }
+
+    // Funkcija za odpiranje slovenskih podnapisov
+    function odpriPodnapise(imdbID) {
+      const imdbStevilka = imdbID.replace(/^tt/, "");
+      const naslov = vnos.value.trim();
+
+      const povezava =
+        "https://www.opensubtitles.org/en/search/" +
+        `imdbid-${encodeURIComponent(imdbStevilka)}/` +
+        "sublanguageid-slv/" +
+        `moviename-${encodeURIComponent(naslov)}`;
+
+      window.open(
+        povezava,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+
+    // Nova funkcija za odpiranje Pirate Bay po vašem vzorcu
+    function odpriPirateBay(naslov, leto) {
+      // Sestavimo niz "Naslov (Leto)" npr. "Tenet (2020)"
+      const iskalniNiz = `${naslov} (${leto})`;
+      
+      const povezava =
+        "https://thepiratebay.party/search/" +
+        encodeURIComponent(iskalniNiz) +
+        "/1/99/0";
+
+      window.open(
+        povezava,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+
+  </script>
+
+</body>
 </html>
