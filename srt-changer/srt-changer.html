@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRT Changer</title>
+
+    <link rel="stylesheet" href="srt-changer.css">
+    <script src="srt-changer.js" defer></script>
+</head>
+
+<body>
+
+<div class="srt-container">
+
+    <main class="srt-card">
+
+        <h2>Popravi podnapise</h2>
+
+        <p class="srt-description">
+            Samodejna pretvorba slovenskih znakov
+            iz Windows-1250 v UTF-8.
+        </p>
+
+        <input
+            type="file"
+            id="srtFileInput"
+            accept=".srt"
+            hidden
+        >
+
+        <div class="srt-dropzone" id="srtDropzone" tabindex="0" role="button" aria-label="Izberi ali spusti SRT datoteko">
+
+            <div class="srt-drop-content" id="srtDropContent">
+                <strong>Spusti SRT datoteko sem</strong>
+                <p>ali klikni za izbiro datoteke</p>
+            </div>
+
+            <div class="srt-file-info" id="srtFileInfo">
+                <div class="srt-file-text">
+                    <div class="srt-file-name" id="srtFileName"></div>
+                    <div class="srt-file-size" id="srtFileSize"></div>
+                </div>
+
+                <div class="srt-file-check">✓</div>
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="srt-convert-btn"
+            id="srtConvertBtn"
+            disabled
+        >
+            ⚡ Pretvori in prenesi
+        </button>
+
+        <div
+            class="srt-status"
+            id="srtStatus"
+            role="status"
+            aria-live="polite"
+        >
+            Najprej izberi SRT datoteko.
+        </div>
+
+        <div class="srt-details" id="srtDetails"></div>
+
+    </main>
+
+    <div class="srt-footer">
+        Windows-1250 → UTF-8 · Lokalna obdelava
+    </div>
+
+</div>
+
+</body>
+</html>
