@@ -1,0 +1,614 @@
+
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SRT Changer</title>
+
+<style>
+:root {
+    color-scheme: dark;
+    --bg: #101319;
+    --panel: #1b2029;
+    --panel2: #252c37;
+    --border: #343d4b;
+    --text: #edf1f7;
+    --muted: #9ba7b7;
+    --accent: #61a5ff;
+    --green: #49d69b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 30px 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+}
+
+.container {
+    max-width: 950px;
+    margin: auto;
+}
+
+header {
+    margin-bottom: 28px;
+}
+
+h1 {
+    font-size: 29px;
+    margin: 0 0 7px;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.dropzone {
+    border: 2px dashed #46566b;
+    border-radius: 10px;
+    padding: 42px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.dropzone:hover,
+.dropzone.dragover {
+    border-color: var(--accent);
+    background: #202c3d;
+}
+
+.dropzone .symbol {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+button, select {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    padding: 10px 15px;
+    font-size: 14px;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:hover {
+    border-color: var(--accent);
+}
+
+.primary {
+    background: #2879d8;
+    border-color: #2879d8;
+    color: white;
+}
+
+.primary:hover {
+    background: #398ce9;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.control {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+    min-width: 180px;
+}
+
+label {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+input[type="checkbox"] {
+    accent-color: var(--accent);
+}
+
+.checkbox {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.fileinfo {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+.status {
+    padding: 12px;
+    background: var(--panel2);
+    border-radius: 8px;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.status.success { color: var(--green); }
+.status.error { color: #ff8585; }
+
+.preview {
+    width: 100%;
+    min-height: 280px;
+    resize: vertical;
+    background: #11161e;
+    color: #cbd8e9;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    font: 13px/1.6 monospace;
+    white-space: pre;
+    overflow: auto;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 650;
+    margin-bottom: 15px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 25px;
+}
+
+.hidden { display: none; }
+
+@media(max-width: 600px) {
+    body { padding: 18px 12px; }
+    h1 { font-size: 24px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+    <h1>🕷 SRT Changer</h1>
+    <div class="subtitle">
+        Subtitle encoding fixer · Slovenski podnapisi in drugi jeziki
+    </div>
+</header>
+
+<div class="panel">
+
+    <div class="section-title">1. Izberi podnapise</div>
+
+    <div class="dropzone" id="dropzone">
+        <div class="symbol">📄</div>
+        <strong>Povleci SRT datoteko sem</strong>
+        <p class="subtitle">ali klikni za izbiro datoteke</p>
+        <input type="file" id="fileInput"
+               accept=".srt,.txt"
+               hidden>
+    </div>
+
+    <div class="fileinfo" id="fileInfo">
+        Datoteka še ni izbrana.
+    </div>
+</div>
+
+<div class="panel">
+
+    <div class="section-title">2. Nastavitve pretvorbe</div>
+
+    <div class="controls">
+
+        <div class="control">
+            <label for="encoding">Vhodno kodiranje</label>
+            <select id="encoding">
+                <option value="auto">Samodejno zaznavanje</option>
+                <option value="utf-8">UTF-8</option>
+                <option value="windows-1250">Windows-1250</option>
+                <option value="iso-8859-2">ISO-8859-2</option>
+                <option value="windows-1252">Windows-1252</option>
+                <option value="iso-8859-1">ISO-8859-1</option>
+            </select>
+        </div>
+
+        <div class="control">
+            <label for="outputEncoding">Izhodno kodiranje</label>
+            <select id="outputEncoding">
+                <option value="utf-8">UTF-8 (priporočeno)</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div style="margin-top:20px; display:grid; gap:12px;">
+
+        <label class="checkbox">
+            <input type="checkbox" id="repair" checked>
+            Popravi napačno interpretirane znake (mojibake)
+        </label>
+
+        <label class="checkbox">
+            <input type="checkbox" id="fixDashes" checked>
+            Popravi posebne pomišljaje in narekovaje
+        </label>
+
+    </div>
+
+    <div class="actions">
+        <button class="primary" id="convertBtn" disabled>
+            ⚡ Pretvori podnapise
+        </button>
+    </div>
+
+    <div id="status" class="status">
+        Čakam na datoteko ...
+    </div>
+
+</div>
+
+<div class="panel">
+
+    <div class="section-title">3. Predogled rezultata</div>
+
+    <textarea class="preview" id="preview"
+        readonly
+        placeholder="Tukaj se bodo prikazali popravljeni podnapisi ..."></textarea>
+
+    <div class="actions">
+        <button class="primary" id="downloadBtn" disabled>
+            ⬇ Prenesi popravljeni SRT
+        </button>
+
+        <button id="copyBtn" disabled>
+            Kopiraj besedilo
+        </button>
+    </div>
+
+</div>
+
+<footer>
+    SRT Changer · Lokalna obdelava · Datoteke ne zapustijo računalnika
+</footer>
+
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const dropzone = document.getElementById("dropzone");
+const fileInfo = document.getElementById("fileInfo");
+const encoding = document.getElementById("encoding");
+const preview = document.getElementById("preview");
+const status = document.getElementById("status");
+const convertBtn = document.getElementById("convertBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const copyBtn = document.getElementById("copyBtn");
+
+let selectedFile = null;
+let convertedText = "";
+let outputName = "";
+
+// Izbira datoteke
+dropzone.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", e => {
+    if (e.target.files.length) {
+        loadFile(e.target.files[0]);
+    }
+});
+
+// Drag & drop
+dropzone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropzone.classList.add("dragover");
+});
+
+dropzone.addEventListener("dragleave", () => {
+    dropzone.classList.remove("dragover");
+});
+
+dropzone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropzone.classList.remove("dragover");
+
+    const file = e.dataTransfer.files[0];
+
+    if (file) loadFile(file);
+});
+
+function loadFile(file) {
+    if (!/\.(srt|txt)$/i.test(file.name)) {
+        showStatus("Izberi SRT ali TXT datoteko.", "error");
+        return;
+    }
+
+    selectedFile = file;
+    convertedText = "";
+
+    fileInfo.textContent =
+        `Datoteka: ${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+
+    convertBtn.disabled = false;
+    downloadBtn.disabled = true;
+    copyBtn.disabled = true;
+
+    preview.value = "";
+
+    showStatus("Datoteka je pripravljena za pretvorbo.", "success");
+}
+
+function showStatus(message, type = "") {
+    status.className = "status " + type;
+    status.textContent = message;
+}
+
+// Zaznavanje sumljivih znakov
+function suspiciousScore(text) {
+    let score = 0;
+
+    const suspicious = [
+        /[\u0080-\u009F]/g,
+        /Ã[\u0080-\u00FF]/g,
+        /Â[\u0080-\u00FF]/g,
+        /Ä[\u0080-\u00FF]/g,
+        /Å[\u0080-\u00FF]/g,
+        /â€./g
+    ];
+
+    for (const regex of suspicious) {
+        score += (text.match(regex) || []).length * 10;
+    }
+
+    // Bonus za pravilne slovenske znake
+    const good = (text.match(/[čšžČŠŽ]/g) || []).length;
+    score -= good * 2;
+
+    return score;
+}
+
+// Preberi datoteko z različnimi kodiranji
+async function decodeFile(file) {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+
+    // UTF-8 BOM
+    if (
+        bytes.length >= 3 &&
+        bytes[0] === 0xEF &&
+        bytes[1] === 0xBB &&
+        bytes[2] === 0xBF
+    ) {
+        return {
+            text: new TextDecoder("utf-8").decode(bytes),
+            encoding: "UTF-8 BOM"
+        };
+    }
+
+    const selected = encoding.value;
+
+    if (selected !== "auto") {
+        return {
+            text: new TextDecoder(selected).decode(bytes),
+            encoding: selected
+        };
+    }
+
+    // Kandidati za samodejno zaznavanje
+    const candidates = [
+        "utf-8",
+        "windows-1250",
+        "iso-8859-2",
+        "windows-1252",
+        "iso-8859-1"
+    ];
+
+    let best = null;
+    let bestScore = Infinity;
+
+    for (const enc of candidates) {
+        try {
+            const text = new TextDecoder(enc, {
+                fatal: enc === "utf-8"
+            }).decode(bytes);
+
+            const score = suspiciousScore(text);
+
+            if (score < bestScore) {
+                bestScore = score;
+                best = { text, encoding: enc };
+            }
+        } catch (e) {
+            // Neveljavno kodiranje, preskoči kandidata
+        }
+    }
+
+    if (!best) {
+        throw new Error("Datoteke ni mogoče prebrati.");
+    }
+
+    return best;
+}
+
+// Popravi besedilo, ki je bilo napačno dekodirano
+function repairMojibake(text) {
+
+    // Primer: znak U+008E je v CP1250 črka Ž.
+    // Besedilo pretvorimo nazaj v bajte in ga
+    // ponovno dekodiramo kot Windows-1250.
+
+    const hasC1 = /[\u0080-\u009F]/.test(text);
+
+    if (hasC1) {
+        try {
+            const bytes = new Uint8Array(
+                Array.from(text, ch => {
+                    const code = ch.charCodeAt(0);
+
+                    if (code > 255) {
+                        throw new Error("Ni mogoče obnoviti bajtov.");
+                    }
+
+                    return code;
+                })
+            );
+
+            const repaired = new TextDecoder(
+                "windows-1250"
+            ).decode(bytes);
+
+            if (
+                suspiciousScore(repaired) <
+                suspiciousScore(text)
+            ) {
+                text = repaired;
+            }
+        } catch (e) {
+            // Ohranimo original, če popravek ni mogoč.
+        }
+    }
+
+    // Popravljanje pogoste UTF-8 / Latin-1 zmešnjave.
+    const replacements = [
+        [/Ã¨/g, "č"],
+        [/Ã/g, "Í"],
+        [/Å¡/g, "š"],
+        [/Å¾/g, "ž"],
+        [/Ä/g, "č"],
+        [/Ä/g, "Č"],
+        [/Ä/g, "đ"],
+        [/Å½/g, "Ž"]
+    ];
+
+    for (const [pattern, replacement] of replacements) {
+        text = text.replace(pattern, replacement);
+    }
+
+    return text;
+}
+
+// Dodatna obdelava pomišljajev in narekovajev
+function fixSpecialCharacters(text) {
+    return text
+        .replace(/\u0096/g, "–")
+        .replace(/\u0097/g, "—")
+        .replace(/\u0091/g, "‘")
+        .replace(/\u0092/g, "’")
+        .replace(/\u0093/g, "“")
+        .replace(/\u0094/g, "”");
+}
+
+// Glavna pretvorba
+convertBtn.addEventListener("click", async () => {
+
+    if (!selectedFile) return;
+
+    try {
+        convertBtn.disabled = true;
+
+        showStatus("Obdelujem podnapise ...");
+
+        const result = await decodeFile(selectedFile);
+
+        let text = result.text;
+
+        if (document.getElementById("repair").checked) {
+            text = repairMojibake(text);
+        }
+
+        if (document.getElementById("fixDashes").checked) {
+            text = fixSpecialCharacters(text);
+        }
+
+        // Odstrani morebitni začetni BOM
+        text = text.replace(/^\uFEFF/, "");
+
+        convertedText = text;
+
+        outputName =
+            selectedFile.name.replace(/\.(srt|txt)$/i, "") +
+            "_FIXED.srt";
+
+        preview.value = convertedText;
+
+        downloadBtn.disabled = false;
+        copyBtn.disabled = false;
+
+        const count = (text.match(/[čšžČŠŽ]/g) || []).length;
+
+        showStatus(
+            `Uspešno! Vhodno kodiranje: ${result.encoding}. ` +
+            `Najdenih slovenskih šumnikov: ${count}. ` +
+            `Izhod: UTF-8.`,
+            "success"
+        );
+
+    } catch (error) {
+        showStatus("Napaka: " + error.message, "error");
+    } finally {
+        convertBtn.disabled = false;
+    }
+});
+
+// Prenos
+downloadBtn.addEventListener("click", () => {
+
+    const blob = new Blob(
+        ["\uFEFF", convertedText],
+        { type: "text/plain;charset=utf-8" }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = outputName;
+    a.click();
+
+    URL.revokeObjectURL(url);
+});
+
+// Kopiranje
+copyBtn.addEventListener("click", async () => {
+    try {
+        await navigator.clipboard.writeText(convertedText);
+        showStatus("Besedilo je kopirano.", "success");
+    } catch (e) {
+        preview.select();
+        document.execCommand("copy");
+        showStatus("Besedilo je kopirano.", "success");
+    }
+});
+</script>
+
+</body>
+</html>
